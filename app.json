@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Aeris",
+    "slug": "aeris",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "aeris",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0D0D0F",
+    "splash": {
+      "backgroundColor": "#0D0D0F",
+      "resizeMode": "contain"
+    },
+    "android": {
+      "package": "com.jaimeet.aeris",
+      "adaptiveIcon": { "backgroundColor": "#0D0D0F" }
+    },
+    "ios": {
+      "bundleIdentifier": "com.jaimeet.aeris",
+      "supportsTablet": false
+    }
+  }
+}
