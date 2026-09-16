@@ -76,3 +76,23 @@ Screens and identity: the Aeris design canvas.
 ## Licence
 
 Private. All rights reserved.
+
+## Getting it onto a phone properly
+
+`npm start` streams the app from your computer through Expo Go, which is fine
+while iterating but stops the moment you close the terminal. To carry Aeris
+around for a week, build a standalone APK — free, and the laptop stays off:
+
+```sh
+npm install -g eas-cli
+eas login                                   # free account from expo.dev
+eas build --platform android --profile preview
+```
+
+EAS builds in the cloud and hands back a download link. Open it on the phone,
+install, done. The `production` profile produces the `.aab` that Play Console
+wants when it is time to ship.
+
+Note that the standalone app and Expo Go keep **separate databases** — anything
+recorded while testing through Expo Go does not carry across. Start real use in
+the installed build.

@@ -13,11 +13,17 @@
     },
     "android": {
       "package": "com.jaimeet.aeris",
-      "adaptiveIcon": { "backgroundColor": "#0D0D0F" }
+      "adaptiveIcon": {
+        "backgroundColor": "#0D0D0F"
+      },
+      "versionCode": 1
     },
     "ios": {
       "bundleIdentifier": "com.jaimeet.aeris",
       "supportsTablet": false
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
   }
 }
