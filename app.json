@@ -17,6 +17,13 @@
         "backgroundColor": "#0D0D0F"
       },
       "blockedPermissions": [
+        "android.permission.WRITE_CONTACTS",
+        "android.permission.WRITE_CONTACTS"
+      ],
+      "permissions": [
+        "android.permission.READ_CONTACTS",
+        "android.permission.WRITE_CONTACTS",
+        "android.permission.READ_CONTACTS",
         "android.permission.WRITE_CONTACTS"
       ]
     },
@@ -34,6 +41,14 @@
     ],
     "runtimeVersion": {
       "policy": "fingerprint"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "15dd704a-4a9f-4c7c-b438-78c1c748dab6"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/15dd704a-4a9f-4c7c-b438-78c1c748dab6"
     }
   }
 }
