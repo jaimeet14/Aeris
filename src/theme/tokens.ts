@@ -1,22 +1,23 @@
 /**
- * Carbon. One colour in the whole app: amber marks money you owe, the live
- * action, and nothing else. Everything else is text on near-black.
+ * Midnight. The ground is a violet-black taken from the app icon, and one
+ * colour does the work: violet marks money you owe, the live action, and
+ * nothing else. Everything else is text on the dark ground.
  */
 export const color = {
-  ground: '#0D0D0F',
-  groundDeep: '#0A0A0C',
-  panel: '#17171B',
-  rule: '#2B2B31',
-  ruleSoft: '#222227',
-  ink: '#F2F2F0',
-  inkSoft: '#D5D5D2',
-  muted: '#87878F',
-  dim: '#5C5C63',
-  faint: '#3A3A42',
-  amber: '#E0A43B',
-  amberInk: '#0D0D0F',
-  amberWash: '#241D0C',
-  amberRule: '#4A3A18',
+  ground: '#0E0C18',
+  groundDeep: '#0A0812',
+  panel: '#18142A',
+  rule: '#2D2742',
+  ruleSoft: '#221D34',
+  ink: '#F2F0F7',
+  inkSoft: '#D6D2E2',
+  muted: '#8B86A3',
+  dim: '#5F5A78',
+  faint: '#3B3652',
+  accent: '#A47BFF',
+  accentInk: '#0E0C18',
+  accentWash: '#221A40',
+  accentRule: '#45337F',
 } as const;
 
 export const space = { xs: 4, sm: 8, md: 12, lg: 18, xl: 22, xxl: 30 } as const;

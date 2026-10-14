@@ -22,12 +22,12 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const navTheme: Theme = {
   dark: true,
   colors: {
-    primary: color.amber,
+    primary: color.accent,
     background: color.ground,
     card: color.ground,
     text: color.ink,
     border: color.rule,
-    notification: color.amber,
+    notification: color.accent,
   },
   fonts: {
     regular: { fontFamily: 'System', fontWeight: '400' },
@@ -52,7 +52,7 @@ export default function App() {
   if (!ready) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator color={color.amber} />
+        <ActivityIndicator color={color.accent} />
       </View>
     );
   }

@@ -51,7 +51,7 @@ export default function LedgerScreen({ navigation, route }: Props) {
         <View style={styles.panel}>
           <View style={styles.panelHead}>
             <Label>{heading}</Label>
-            <Label tone="amber">
+            <Label tone="accent">
               {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
             </Label>
           </View>
@@ -91,7 +91,7 @@ export default function LedgerScreen({ navigation, route }: Props) {
                         ? 'Repayment'
                         : entry.note || (entry.occasionId ? labels[entry.occasionId] : null) || 'Entry'}
                     </Text>
-                    <Text style={[styles.entryAmount, signed < 0 && { color: color.amber }]}>
+                    <Text style={[styles.entryAmount, signed < 0 && { color: color.accent }]}>
                       {formatSignedMoney(signed, currency)}
                     </Text>
                   </View>

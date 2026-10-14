@@ -58,7 +58,7 @@ export default function ContactPickerScreen({ navigation }: Props) {
       {failed ? (
         <Text style={styles.message}>Contacts could not be read. You can still type a name.</Text>
       ) : rows === null ? (
-        <ActivityIndicator color={color.amber} style={styles.loading} />
+        <ActivityIndicator color={color.accent} style={styles.loading} />
       ) : (
         <FlatList
           data={visible}

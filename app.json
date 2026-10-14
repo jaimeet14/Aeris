@@ -6,15 +6,14 @@
     "orientation": "portrait",
     "scheme": "aeris",
     "userInterfaceStyle": "dark",
-    "backgroundColor": "#0D0D0F",
-    "splash": {
-      "backgroundColor": "#0D0D0F",
-      "resizeMode": "contain"
-    },
+    "backgroundColor": "#0E0C18",
     "android": {
       "package": "com.jaimeet.aeris",
       "adaptiveIcon": {
-        "backgroundColor": "#0D0D0F"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundImage": "./assets/adaptive-icon-background.png",
+        "monochromeImage": "./assets/adaptive-icon-monochrome.png",
+        "backgroundColor": "#120E26"
       },
       "blockedPermissions": [
         "android.permission.WRITE_CONTACTS",
@@ -37,6 +36,15 @@
         {
           "contactsPermission": "Aeris reads names and numbers so you can pick who you lent to or borrowed from. Your contacts stay on this phone."
         }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#0E0C18"
+        }
       ]
     ],
     "runtimeVersion": {
@@ -49,6 +57,7 @@
     },
     "updates": {
       "url": "https://u.expo.dev/15dd704a-4a9f-4c7c-b438-78c1c748dab6"
-    }
+    },
+    "icon": "./assets/icon.png"
   }
 }

@@ -149,7 +149,7 @@ export default function AddEntryScreen({ navigation, route }: Props) {
               />
               {!fixedPerson && (
                 <Pressable accessibilityRole="button" onPress={openContacts} style={styles.contactsButton}>
-                  <Label tone="amber">Contacts</Label>
+                  <Label tone="accent">Contacts</Label>
                 </Pressable>
               )}
             </View>
@@ -193,7 +193,7 @@ export default function AddEntryScreen({ navigation, route }: Props) {
                   autoFocus
                 />
                 <Pressable accessibilityRole="button" onPress={addOccasion} style={styles.contactsButton}>
-                  <Label tone="amber">Add</Label>
+                  <Label tone="accent">Add</Label>
                 </Pressable>
                 <Pressable accessibilityRole="button" onPress={() => setNewOccasion(null)} style={styles.contactsButton}>
                   <Label>Cancel</Label>
@@ -250,8 +250,8 @@ const styles = StyleSheet.create({
   phone: { ...type.small, color: color.dim },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   chip: { borderWidth: 1, borderColor: color.rule, paddingVertical: 7, paddingHorizontal: 11 },
-  chipOn: { backgroundColor: color.amber, borderColor: color.amber },
+  chipOn: { backgroundColor: color.accent, borderColor: color.accent },
   chipText: { color: color.muted, fontSize: 11, fontWeight: '500', letterSpacing: 1, textTransform: 'uppercase' },
-  chipTextOn: { color: color.amberInk, fontWeight: '600' },
+  chipTextOn: { color: color.accentInk, fontWeight: '600' },
   footer: { paddingVertical: space.lg },
 });
