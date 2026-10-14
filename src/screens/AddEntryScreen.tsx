@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { currencyByCode, DEFAULT_CURRENCY_CODE } from '../domain/currency';
 import type { Direction } from '../domain/entry';
 import { parseAmount } from '../domain/money';
-import type { Occasion } from '../domain/occasions';
-import { addEntry, findOrCreatePerson, getSetting, listOccasions } from '../db/repo';
+import { MAX_OCCASION_LABEL, type Occasion } from '../domain/occasions';
+import { contactsAccess } from '../contacts/device';
+import { addEntry, createOccasion, findOrCreatePerson, getSetting, listOccasions } from '../db/repo';
 import type { RootStackParamList } from '../navigation/types';
 import { Button, Choice, Label } from '../ui/atoms';
 import { color, space, type } from '../theme/tokens';
@@ -17,11 +18,14 @@ export default function AddEntryScreen({ navigation, route }: Props) {
   const [direction, setDirection] = useState<Direction>('lent');
   const [amount, setAmount] = useState('');
   const [who, setWho] = useState(route.params?.name ?? '');
+  const [phoneE164, setPhoneE164] = useState<string | null>(route.params?.phoneE164 ?? null);
   const [note, setNote] = useState('');
   const [occasions, setOccasions] = useState<Occasion[]>([]);
   const [occasionId, setOccasionId] = useState<string | null>(null);
   const [code, setCode] = useState(DEFAULT_CURRENCY_CODE);
   const [saving, setSaving] = useState(false);
+  const [newOccasion, setNewOccasion] = useState<string | null>(null);
+  const fixedPerson = route.params?.ledgerId !== undefined;
 
   useEffect(() => {
     (async () => {
@@ -29,6 +33,45 @@ export default function AddEntryScreen({ navigation, route }: Props) {
       setCode((await getSetting('currency')) ?? DEFAULT_CURRENCY_CODE);
     })();
   }, []);
+
+  // The contact picker hands its choice back through these params.
+  const pickedName = route.params?.name;
+  const pickedPhone = route.params?.phoneE164;
+  const pickedAt = route.params?.pickedAt;
+  useEffect(() => {
+    if (fixedPerson || pickedName === undefined) return;
+    setWho(pickedName);
+    setPhoneE164(pickedPhone ?? null);
+  }, [fixedPerson, pickedName, pickedPhone, pickedAt]);
+
+  function typeWho(text: string) {
+    setWho(text);
+    // A typed name is no longer the contact that was picked.
+    setPhoneE164(null);
+  }
+
+  async function openContacts() {
+    const access = await contactsAccess();
+    if (access === 'granted') navigation.navigate('ContactPicker');
+    else if (access === 'ask') navigation.navigate('ContactsPriming');
+    else {
+      Alert.alert('Contacts are turned off', 'Allow Aeris to read contacts in Settings, or type a name.', [
+        { text: 'Type a name', style: 'cancel' },
+        { text: 'Open Settings', onPress: () => void Linking.openSettings() },
+      ]);
+    }
+  }
+
+  async function addOccasion() {
+    try {
+      const occasion = await createOccasion(newOccasion ?? '');
+      setOccasions(await listOccasions());
+      setOccasionId(occasion.id);
+      setNewOccasion(null);
+    } catch (error) {
+      Alert.alert('That occasion did not save', error instanceof Error ? error.message : 'Unknown problem');
+    }
+  }
 
   const currency = currencyByCode(code);
   const ready = who.trim() !== '' && amount.trim() !== '' && !saving;
@@ -39,7 +82,7 @@ export default function AddEntryScreen({ navigation, route }: Props) {
       const amountMinor = parseAmount(amount, currency);
       if (amountMinor <= 0) throw new Error('Enter an amount greater than zero');
       const ledgerId =
-        route.params?.ledgerId ?? (await findOrCreatePerson(who, currency.code)).ledgerId;
+        route.params?.ledgerId ?? (await findOrCreatePerson(who, currency.code, phoneE164)).ledgerId;
       await addEntry({
         ledgerId,
         direction,
@@ -95,14 +138,22 @@ export default function AddEntryScreen({ navigation, route }: Props) {
         <View style={styles.fields}>
           <View style={styles.field}>
             <Label>Who</Label>
-            <TextInput
-              value={who}
-              onChangeText={setWho}
-              editable={route.params?.ledgerId === undefined}
-              placeholder="Their name"
-              placeholderTextColor={color.dim}
-              style={styles.input}
-            />
+            <View style={styles.whoRow}>
+              <TextInput
+                value={who}
+                onChangeText={typeWho}
+                editable={!fixedPerson}
+                placeholder="Their name"
+                placeholderTextColor={color.dim}
+                style={[styles.input, styles.whoInput]}
+              />
+              {!fixedPerson && (
+                <Pressable accessibilityRole="button" onPress={openContacts} style={styles.contactsButton}>
+                  <Label tone="amber">Contacts</Label>
+                </Pressable>
+              )}
+            </View>
+            {phoneE164 && <Text style={styles.phone}>{phoneE164}</Text>}
           </View>
 
           <View style={[styles.field, styles.divided]}>
@@ -122,7 +173,33 @@ export default function AddEntryScreen({ navigation, route }: Props) {
                   </Pressable>
                 );
               })}
+              {newOccasion === null && (
+                <Pressable accessibilityRole="button" onPress={() => setNewOccasion('')} style={styles.chip}>
+                  <Text style={styles.chipText}>+ New</Text>
+                </Pressable>
+              )}
             </View>
+            {newOccasion !== null && (
+              <View style={styles.whoRow}>
+                <TextInput
+                  value={newOccasion}
+                  onChangeText={setNewOccasion}
+                  onSubmitEditing={addOccasion}
+                  placeholder="Goa trip, Gym, Gift…"
+                  placeholderTextColor={color.dim}
+                  maxLength={MAX_OCCASION_LABEL}
+                  returnKeyType="done"
+                  style={[styles.input, styles.whoInput]}
+                  autoFocus
+                />
+                <Pressable accessibilityRole="button" onPress={addOccasion} style={styles.contactsButton}>
+                  <Label tone="amber">Add</Label>
+                </Pressable>
+                <Pressable accessibilityRole="button" onPress={() => setNewOccasion(null)} style={styles.contactsButton}>
+                  <Label>Cancel</Label>
+                </Pressable>
+              </View>
+            )}
           </View>
 
           <View style={[styles.field, styles.divided]}>
@@ -167,6 +244,10 @@ const styles = StyleSheet.create({
   divided: { borderTopWidth: 1, borderTopColor: color.ruleSoft },
   input: { color: color.ink, ...type.body, padding: 0, minHeight: 24 },
   readonly: { color: color.inkSoft, ...type.body },
+  whoRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  whoInput: { flex: 1 },
+  contactsButton: { minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' },
+  phone: { ...type.small, color: color.dim },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   chip: { borderWidth: 1, borderColor: color.rule, paddingVertical: 7, paddingHorizontal: 11 },
   chipOn: { backgroundColor: color.amber, borderColor: color.amber },

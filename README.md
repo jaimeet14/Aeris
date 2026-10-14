@@ -8,16 +8,33 @@ connections, no interest, no lending. It is a notebook that does the arithmetic.
 
 ## Where this is
 
-Milestone 1 of six: the app runs entirely on the phone. No account, no server,
-no network. What works today:
+Milestone 2 of six: the app still runs entirely on the phone. No account, no
+server, no network. What works today:
 
 - Record what you lent and what you borrowed, with an occasion, a note, and a timestamp
 - A per-person ledger with a running balance
 - Part payments and settle-in-full, allocated oldest-debt-first
-- Currency chosen on first launch from a list, changeable later
+- Currency chosen on first launch from a list, changeable later from Home
+- **Pick people from your contacts** (M2). A priming screen explains what is read
+  before the system asks, and skipping it is fine — typing a name still works.
+  Numbers are stored in E.164, so the same friend saved two ways is one ledger.
+- **Your own occasions** (M2) alongside the presets — "Goa trip", "Gym", whatever
+  you lend for. Adding one that already exists, in any case, reuses it.
+- **Activity** (M2): the time log across every person, grouped by day, in the
+  order Aeris was told. When the money moved at a different time it says so.
 
-Not built yet: contacts matching (M2), the store release (M3), sync (M4), and
-two-sided confirmed ledgers with the inbox (M5).
+Not built yet: the store release (M3), sync (M4), and two-sided confirmed
+ledgers with the inbox (M5).
+
+### Contacts never leave the phone
+
+`src/contacts/device.ts` is the only file that touches the address book. It reads
+names and numbers, never writes (`WRITE_CONTACTS` is blocked in `app.json`), and
+nothing it returns is sent anywhere — there is nowhere to send it until M4.
+
+A number typed without a `+` is read as belonging to the country of your
+currency (INR → +91). EUR spans too many countries to guess, so with EUR only
+numbers written with a `+` are kept; the person is still saved, just without one.
 
 ## Running it
 
@@ -30,7 +47,7 @@ npm start          # then scan the QR code with Expo Go
 there is nothing to build and nothing to pay for while iterating.
 
 ```sh
-npm test           # domain tests — money, balances, allocation
+npm test           # domain tests — money, balances, allocation, phones, activity
 npm run typecheck
 ```
 
@@ -39,6 +56,7 @@ npm run typecheck
 ```
 src/
   domain/     pure TypeScript, no React, no SQL — the part that must be right
+  contacts/   the address-book adapter, read-only
   db/         SQLite schema, migrations, repository functions
   screens/    one file per screen
   ui/         shared components and the Aeris mark

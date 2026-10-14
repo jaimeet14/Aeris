@@ -3,7 +3,7 @@
  * engine at M4 has nothing to translate. `sync_outbox` is here from day one and
  * stays empty until then — adding it later would mean a migration on live data.
  */
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 export const MIGRATIONS: readonly string[] = [
   `
@@ -63,5 +63,9 @@ export const MIGRATIONS: readonly string[] = [
     attempts   INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL
   );
+  `,
+  // M2: contacts. Looking a person up by number happens on every save from the picker.
+  `
+  CREATE INDEX IF NOT EXISTS counterparty_phone ON counterparty(phone_e164);
   `,
 ];

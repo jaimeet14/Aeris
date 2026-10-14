@@ -2,7 +2,8 @@ import * as Crypto from 'expo-crypto';
 import { ledgerBalance } from '../domain/balance';
 import type { Direction, Entry } from '../domain/entry';
 import type { Minor } from '../domain/money';
-import { type Occasion, sortOccasions } from '../domain/occasions';
+import { cleanOccasionLabel, findOccasionByLabel, type Occasion, sortOccasions } from '../domain/occasions';
+import { cleanName, type KnownPerson, matchPerson } from '../domain/people';
 import { getDatabase } from './database';
 
 export const newId = (): string => Crypto.randomUUID();
@@ -72,9 +73,14 @@ export async function listOccasions(): Promise<Occasion[]> {
   );
 }
 
-export async function createOccasion(label: string): Promise<Occasion> {
+/** Adding a label that already exists, in any case, returns the existing one. */
+export async function createOccasion(rawLabel: string): Promise<Occasion> {
+  const label = cleanOccasionLabel(rawLabel);
+  const existing = findOccasionByLabel(await listOccasions(), label);
+  if (existing) return existing;
+
   const db = await getDatabase();
-  const occasion: Occasion = { id: newId(), label: label.trim(), isPreset: false, useCount: 0 };
+  const occasion: Occasion = { id: newId(), label, isPreset: false, useCount: 0 };
   await db.runAsync(
     'INSERT INTO occasion (id, label, is_preset, use_count) VALUES (?, ?, 0, 0)',
     occasion.id,
@@ -83,23 +89,36 @@ export async function createOccasion(label: string): Promise<Occasion> {
   return occasion;
 }
 
-/** One ledger per person. Reuses the existing one rather than opening a second. */
-export async function findOrCreatePerson(name: string, currency: string): Promise<Person> {
+/**
+ * One ledger per person, found by phone number first and name second (see
+ * `matchPerson`). A number picked for someone first typed by hand is attached
+ * to them rather than opening a second ledger.
+ */
+export async function findOrCreatePerson(
+  rawName: string,
+  currency: string,
+  phoneE164: string | null = null,
+): Promise<Person> {
   const db = await getDatabase();
-  const existing = await db.getFirstAsync<{ id: string; ledger_id: string; currency: string }>(
-    `SELECT c.id, l.id AS ledger_id, l.currency
+  const name = cleanName(rawName);
+  const known = await db.getAllAsync<KnownPerson & { ledgerId: string; currency: string }>(
+    `SELECT c.id, c.local_name AS name, c.phone_e164 AS phoneE164, l.id AS ledgerId, l.currency
        FROM counterparty c JOIN ledger l ON l.counterparty_id = c.id
-      WHERE lower(c.local_name) = lower(?) AND c.archived_at IS NULL`,
-    name.trim(),
+      WHERE c.archived_at IS NULL`,
   );
+  const match = matchPerson(known, name, phoneE164);
 
-  if (existing) {
+  if (match.kind === 'existing') {
+    const person = known.find((p) => p.id === match.id)!;
+    if (match.attachPhone) {
+      await db.runAsync('UPDATE counterparty SET phone_e164 = ? WHERE id = ?', match.attachPhone, person.id);
+    }
     return {
-      counterpartyId: existing.id,
-      ledgerId: existing.ledger_id,
-      name: name.trim(),
-      currency: existing.currency,
-      balanceMinor: await balanceOf(existing.ledger_id),
+      counterpartyId: person.id,
+      ledgerId: person.ledgerId,
+      name: person.name,
+      currency: person.currency,
+      balanceMinor: await balanceOf(person.ledgerId),
       lastActivityAt: Date.now(),
     };
   }
@@ -107,19 +126,22 @@ export async function findOrCreatePerson(name: string, currency: string): Promis
   const counterpartyId = newId();
   const ledgerId = newId();
   const now = Date.now();
-  await db.runAsync(
-    'INSERT INTO counterparty (id, local_name, phone_e164, archived_at) VALUES (?, ?, NULL, NULL)',
-    counterpartyId,
-    name.trim(),
-  );
-  await db.runAsync(
-    'INSERT INTO ledger (id, counterparty_id, currency, last_activity_at) VALUES (?, ?, ?, ?)',
-    ledgerId,
-    counterpartyId,
-    currency,
-    now,
-  );
-  return { counterpartyId, ledgerId, name: name.trim(), currency, balanceMinor: 0, lastActivityAt: now };
+  await db.withTransactionAsync(async () => {
+    await db.runAsync(
+      'INSERT INTO counterparty (id, local_name, phone_e164, archived_at) VALUES (?, ?, ?, NULL)',
+      counterpartyId,
+      name,
+      phoneE164,
+    );
+    await db.runAsync(
+      'INSERT INTO ledger (id, counterparty_id, currency, last_activity_at) VALUES (?, ?, ?, ?)',
+      ledgerId,
+      counterpartyId,
+      currency,
+      now,
+    );
+  });
+  return { counterpartyId, ledgerId, name, currency, balanceMinor: 0, lastActivityAt: now };
 }
 
 export async function listEntries(ledgerId: string): Promise<Entry[]> {
@@ -231,18 +253,27 @@ export async function reverseEntry(entry: Entry): Promise<void> {
 export interface ActivityItem extends Entry {
   personName: string;
   currency: string;
+  occasionLabel: string | null;
 }
 
 export async function listActivity(limit = 100): Promise<ActivityItem[]> {
   const db = await getDatabase();
-  const rows = await db.getAllAsync<EntryRow & { person_name: string; currency: string }>(
-    `SELECT e.*, c.local_name AS person_name, l.currency
+  const rows = await db.getAllAsync<
+    EntryRow & { person_name: string; currency: string; occasion_label: string | null }
+  >(
+    `SELECT e.*, c.local_name AS person_name, l.currency, o.label AS occasion_label
        FROM entry e
        JOIN ledger l ON l.id = e.ledger_id
        JOIN counterparty c ON c.id = l.counterparty_id
+       LEFT JOIN occasion o ON o.id = e.occasion_id
       ORDER BY e.recorded_at DESC
       LIMIT ?`,
     limit,
   );
-  return rows.map((r) => ({ ...toEntry(r), personName: r.person_name, currency: r.currency }));
+  return rows.map((r) => ({
+    ...toEntry(r),
+    personName: r.person_name,
+    currency: r.currency,
+    occasionLabel: r.occasion_label,
+  }));
 }

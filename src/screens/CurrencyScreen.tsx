@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { type Currency, searchCurrencies, suggestCurrency } from '../domain/currency';
-import { setSetting } from '../db/repo';
+import { type Currency, currencyByCode, searchCurrencies, suggestCurrency } from '../domain/currency';
+import { getSetting, setSetting } from '../db/repo';
 import type { RootStackParamList } from '../navigation/types';
 import { Button, Label } from '../ui/atoms';
 import { color, space, type } from '../theme/tokens';
@@ -16,6 +16,14 @@ export default function CurrencyScreen({ navigation, route }: Props) {
   const [chosen, setChosen] = useState<Currency>(suggested);
   const [query, setQuery] = useState('');
   const results = searchCurrencies(query).filter((c) => c.code !== suggested.code);
+
+  useEffect(() => {
+    if (firstRun) return;
+    (async () => {
+      const saved = await getSetting('currency');
+      if (saved) setChosen(currencyByCode(saved));
+    })();
+  }, [firstRun]);
 
   async function confirm() {
     await setSetting('currency', chosen.code);

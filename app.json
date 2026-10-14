@@ -15,11 +15,22 @@
       "package": "com.jaimeet.aeris",
       "adaptiveIcon": {
         "backgroundColor": "#0D0D0F"
-      }
+      },
+      "blockedPermissions": [
+        "android.permission.WRITE_CONTACTS"
+      ]
     },
     "ios": {
       "bundleIdentifier": "com.jaimeet.aeris",
       "supportsTablet": false
-    }
+    },
+    "plugins": [
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Aeris reads names and numbers so you can pick who you lent to or borrowed from. Your contacts stay on this phone."
+        }
+      ]
+    ]
   }
 }

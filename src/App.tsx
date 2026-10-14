@@ -7,7 +7,10 @@ import { StatusBar } from 'expo-status-bar';
 import { getDatabase } from './db/database';
 import { getSetting } from './db/repo';
 import type { RootStackParamList } from './navigation/types';
+import ActivityScreen from './screens/ActivityScreen';
 import AddEntryScreen from './screens/AddEntryScreen';
+import ContactPickerScreen from './screens/ContactPickerScreen';
+import ContactsPrimingScreen from './screens/ContactsPrimingScreen';
 import CurrencyScreen from './screens/CurrencyScreen';
 import HomeScreen from './screens/HomeScreen';
 import LedgerScreen from './screens/LedgerScreen';
@@ -75,6 +78,9 @@ export default function App() {
           />
           <Stack.Screen name="AddEntry" component={AddEntryScreen} options={{ headerShown: false, presentation: 'modal' }} />
           <Stack.Screen name="SettleUp" component={SettleUpScreen} options={{ headerShown: false, presentation: 'modal' }} />
+          <Stack.Screen name="ContactsPriming" component={ContactsPrimingScreen} options={{ headerShown: false, presentation: 'modal' }} />
+          <Stack.Screen name="ContactPicker" component={ContactPickerScreen} options={{ headerShown: false, presentation: 'modal' }} />
+          <Stack.Screen name="Activity" component={ActivityScreen} options={{ title: 'Activity' }} />
           <Stack.Screen
             name="Currency"
             component={CurrencyScreen}
