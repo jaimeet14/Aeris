@@ -83,7 +83,7 @@ export default function ActivityScreen({ navigation }: Props) {
                     .filter(Boolean)
                     .join(' · ') || ' '}
                 </Text>
-                <Text style={[styles.amount, signedAmount(item) < 0 && { color: color.amber }]}>
+                <Text style={[styles.amount, signedAmount(item) < 0 && { color: color.accent }]}>
                   {formatSignedMoney(signedAmount(item), currencyByCode(item.currency))}
                 </Text>
               </View>

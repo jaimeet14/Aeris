@@ -102,11 +102,11 @@ function Row({
       onPress={() => onPress(currency)}
       style={[styles.row, divided && styles.rowDivided, selected && styles.rowSelected]}
     >
-      <Text style={[styles.symbol, selected && { color: color.amber }]}>{currency.symbol}</Text>
+      <Text style={[styles.symbol, selected && { color: color.accent }]}>{currency.symbol}</Text>
       <Text style={[styles.name, selected && { color: color.ink, fontWeight: '600' }]}>
         {currency.name}
       </Text>
-      <Text style={[styles.code, selected && { color: color.amber }]}>{currency.code}</Text>
+      <Text style={[styles.code, selected && { color: color.accent }]}>{currency.code}</Text>
     </Pressable>
   );
 }
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   group: { borderWidth: 1, borderColor: color.rule },
   row: { flexDirection: 'row', alignItems: 'center', height: 50, paddingHorizontal: space.md, gap: space.md },
   rowDivided: { borderTopWidth: 1, borderTopColor: color.ruleSoft },
-  rowSelected: { backgroundColor: color.amberWash, borderColor: color.amber, borderWidth: 1 },
+  rowSelected: { backgroundColor: color.accentWash, borderColor: color.accent, borderWidth: 1 },
   symbol: { width: 34, textAlign: 'center', color: color.muted, fontSize: 15, fontWeight: '600' },
   name: { flex: 1, color: color.inkSoft, ...type.bodyStrong },
   code: { ...type.label, color: color.dim },

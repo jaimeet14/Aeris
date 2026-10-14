@@ -37,7 +37,7 @@ export default function ContactsPrimingScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.body}>
-        <Mark size={36} tint={color.amber} />
+        <Mark size={36} tint={color.accent} />
         <Text style={styles.title}>Pick people you already know</Text>
         <Text style={styles.blurb}>
           Choose a name from your contacts instead of typing it, so the same friend is always the
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   blurb: { ...type.body, color: color.muted, lineHeight: 22 },
   promises: { borderWidth: 1, borderColor: color.rule, backgroundColor: color.panel, padding: space.lg, gap: space.md },
   promise: { flexDirection: 'row', gap: space.md, alignItems: 'baseline' },
-  tick: { color: color.amber, fontSize: 13 },
+  tick: { color: color.accent, fontSize: 13 },
   promiseText: { ...type.small, color: color.inkSoft, flex: 1 },
   footer: { paddingVertical: space.lg, gap: space.sm },
   skip: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },

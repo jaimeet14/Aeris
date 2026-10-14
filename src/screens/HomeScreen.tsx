@@ -36,12 +36,11 @@ export default function HomeScreen({ navigation }: Props) {
   const currency = currencyByCode(code);
   const net = netPosition(people.map((p) => p.balanceMinor));
   const empty = people.length === 0;
-  const tilt = net.netMinor === 0 ? 0 : net.netMinor > 0 ? -8 : 8;
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <Mark size={22} tint={color.amber} tilt={tilt} />
+        <Mark size={22} tint={color.accent} />
         <View style={styles.headerLinks}>
           <Pressable
             accessibilityRole="button"
@@ -83,7 +82,7 @@ export default function HomeScreen({ navigation }: Props) {
             <View style={styles.splitRule} />
             <View style={styles.splitHalf}>
               <Label>You owe</Label>
-              <Text style={[styles.splitValue, { color: color.amber }]}>
+              <Text style={[styles.splitValue, { color: color.accent }]}>
                 {formatMoney(net.youOweMinor, currency)}
               </Text>
             </View>
@@ -122,7 +121,7 @@ export default function HomeScreen({ navigation }: Props) {
                 <Text
                   style={[
                     styles.personAmount,
-                    person.balanceMinor < 0 && { color: color.amber },
+                    person.balanceMinor < 0 && { color: color.accent },
                     person.balanceMinor === 0 && { color: color.dim },
                   ]}
                 >

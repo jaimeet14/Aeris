@@ -2,8 +2,8 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { TOUCH, color, radius, space, type } from '../theme/tokens';
 
-export function Label({ children, tone = 'muted' }: { children: ReactNode; tone?: 'muted' | 'amber' }) {
-  return <Text style={[styles.label, tone === 'amber' && { color: color.amber }]}>{children}</Text>;
+export function Label({ children, tone = 'muted' }: { children: ReactNode; tone?: 'muted' | 'accent' }) {
+  return <Text style={[styles.label, tone === 'accent' && { color: color.accent }]}>{children}</Text>;
 }
 
 export function Panel({ children, style }: { children: ReactNode; style?: ViewStyle }) {
@@ -70,7 +70,7 @@ export function Choice({
             onPress={() => onChange(option.key)}
             style={[styles.choice, on ? styles.choiceOn : styles.choiceOff]}
           >
-            <Text style={[styles.choiceText, { color: on ? color.amber : color.muted }]}>
+            <Text style={[styles.choiceText, { color: on ? color.accent : color.muted }]}>
               {option.title}
             </Text>
           </Pressable>
@@ -104,12 +104,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: space.xl,
   },
-  buttonPrimary: { backgroundColor: color.amber },
+  buttonPrimary: { backgroundColor: color.accent },
   buttonOutline: { borderWidth: 1, borderColor: color.rule },
   buttonDisabled: { opacity: 0.4 },
   buttonPressed: { opacity: 0.85 },
   buttonText: { fontSize: 11, fontWeight: '600', letterSpacing: 2, textTransform: 'uppercase' },
-  buttonTextPrimary: { color: color.amberInk },
+  buttonTextPrimary: { color: color.accentInk },
   buttonTextOutline: { color: color.inkSoft },
   choiceRow: { flexDirection: 'row', gap: space.sm },
   choice: {
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  choiceOn: { borderColor: color.amber, backgroundColor: color.amberWash },
+  choiceOn: { borderColor: color.accent, backgroundColor: color.accentWash },
   choiceOff: { borderColor: color.rule },
   choiceText: { fontSize: 10.5, fontWeight: '600', letterSpacing: 1.6, textTransform: 'uppercase' },
   initials: {
