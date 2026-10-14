@@ -31,6 +31,9 @@
           "contactsPermission": "Aeris reads names and numbers so you can pick who you lent to or borrowed from. Your contacts stay on this phone."
         }
       ]
-    ]
+    ],
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    }
   }
 }

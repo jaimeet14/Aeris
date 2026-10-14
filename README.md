@@ -114,3 +114,33 @@ wants when it is time to ship.
 Note that the standalone app and Expo Go keep **separate databases** — anything
 recorded while testing through Expo Go does not carry across. Start real use in
 the installed build.
+
+**Install the new APK over the old one — never uninstall first.** Android keeps
+the app's data when the new build is signed with the same key, and EAS signs
+every build with the same stored keystore. Uninstalling wipes everything recorded.
+
+## Shipping changes without a new APK
+
+Builds include `expo-updates`, so a change that is JavaScript only reaches the
+phone over the air: the app downloads it in the background and uses it from the
+next launch. One-time setup, on the machine you build from:
+
+```sh
+eas update:configure     # writes the project id and update URL into app.json
+git add app.json && git commit -m "Point expo-updates at the EAS project"
+```
+
+Then build the APK once more (`eas build --platform android --profile preview`)
+and install it over the old one. After that:
+
+```sh
+eas update --channel preview --message "what changed"
+```
+
+Each build profile listens on the channel of the same name (see `eas.json`).
+
+`runtimeVersion` uses the **fingerprint** policy: it is a hash of the native
+side of the app. An update only lands on builds with the same fingerprint, so a
+change that adds a native module — contacts at M2, push notifications at M5 —
+can never be pushed onto an APK that lacks it. Those changes still need a new
+build; EAS says so when the fingerprint no longer matches.
