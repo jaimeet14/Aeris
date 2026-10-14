@@ -42,14 +42,31 @@ export default function HomeScreen({ navigation }: Props) {
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.header}>
         <Mark size={22} tint={color.amber} tilt={tilt} />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Add entry"
-          onPress={() => navigation.navigate('AddEntry', {})}
-          style={styles.plus}
-        >
-          <Text style={styles.plusText}>+</Text>
-        </Pressable>
+        <View style={styles.headerLinks}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => navigation.navigate('Activity')}
+            style={styles.link}
+          >
+            <Label>Activity</Label>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Default currency ${code}. Change`}
+            onPress={() => navigation.navigate('Currency', {})}
+            style={styles.link}
+          >
+            <Label>{code}</Label>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Add entry"
+            onPress={() => navigation.navigate('AddEntry', {})}
+            style={styles.plus}
+          >
+            <Text style={styles.plusText}>+</Text>
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.body}>
@@ -125,6 +142,8 @@ export default function HomeScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.ground, paddingHorizontal: space.xl },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: space.md },
+  headerLinks: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  link: { minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center', paddingHorizontal: space.xs },
   plus: { width: 44, height: 44, alignItems: 'flex-end', justifyContent: 'center' },
   plusText: { color: color.muted, fontSize: 26, fontWeight: '300' },
   body: { paddingBottom: space.xxl, gap: space.xxl },
