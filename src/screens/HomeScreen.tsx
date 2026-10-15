@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { netPosition } from '../domain/balance';
+import { type NetPosition, netPositionsByCurrency } from '../domain/balance';
 import { currencyByCode, DEFAULT_CURRENCY_CODE } from '../domain/currency';
 import { formatMoney, formatSignedMoney } from '../domain/money';
 import { getSetting, listPeople, type Person } from '../db/repo';
@@ -34,7 +34,12 @@ export default function HomeScreen({ navigation }: Props) {
   );
 
   const currency = currencyByCode(code);
-  const net = netPosition(people.map((p) => p.balanceMinor));
+  // Each currency is netted on its own; the hero shows the default currency.
+  const positions = netPositionsByCurrency(people);
+  const net: NetPosition = positions[code] ?? { owedToYouMinor: 0, youOweMinor: 0, netMinor: 0 };
+  const others = Object.entries(positions).filter(
+    ([other, p]) => other !== code && (p.owedToYouMinor !== 0 || p.youOweMinor !== 0),
+  );
   const empty = people.length === 0;
 
   const netTone = empty ? color.faint : moneyTone(net.netMinor);
@@ -84,6 +89,15 @@ export default function HomeScreen({ navigation }: Props) {
               </Text>
             </View>
           </View>
+          {others.length > 0 && (
+            <Text style={styles.others}>
+              Also{' '}
+              {others
+                .map(([other, p]) => formatSignedMoney(p.netMinor, currencyByCode(other)))
+                .join(' · ')}{' '}
+              in other currencies
+            </Text>
+          )}
         </View>
 
         {empty ? (
@@ -167,6 +181,7 @@ const styles = StyleSheet.create({
   statHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   statDot: { width: 8, height: 8, borderRadius: 4 },
   statValue: { fontSize: 19, fontWeight: '700', letterSpacing: -0.3 },
+  others: { ...type.small, color: color.muted },
   people: { gap: space.md },
   card: { backgroundColor: color.panel, borderRadius: radius.lg, overflow: 'hidden' },
   person: {

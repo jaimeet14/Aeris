@@ -8,7 +8,7 @@ import { ledgerBalance, openDebts, remainingOnDebt } from '../domain/balance';
 import { currencyByCode, DEFAULT_CURRENCY_CODE } from '../domain/currency';
 import type { Entry } from '../domain/entry';
 import { formatMoney, parseAmount } from '../domain/money';
-import { addEntry, getSetting, listEntries } from '../db/repo';
+import { addEntry, getLedgerCurrency, getSetting, listEntries } from '../db/repo';
 import type { RootStackParamList } from '../navigation/types';
 import { Button, Choice, IconButton, Label } from '../ui/atoms';
 import { color, moneyTone, radius, space, type } from '../theme/tokens';
@@ -27,10 +27,14 @@ export default function SettleUpScreen({ navigation, route }: Props) {
     useCallback(() => {
       let alive = true;
       (async () => {
-        const [rows, saved] = await Promise.all([listEntries(ledgerId), getSetting('currency')]);
+        const [rows, ledgerCurrency, saved] = await Promise.all([
+          listEntries(ledgerId),
+          getLedgerCurrency(ledgerId),
+          getSetting('currency'),
+        ]);
         if (!alive) return;
         setEntries(rows);
-        setCode(saved ?? DEFAULT_CURRENCY_CODE);
+        setCode(ledgerCurrency ?? saved ?? DEFAULT_CURRENCY_CODE);
       })();
       return () => {
         alive = false;

@@ -7,7 +7,7 @@ import { ledgerBalance } from '../domain/balance';
 import { currencyByCode, DEFAULT_CURRENCY_CODE } from '../domain/currency';
 import type { Entry } from '../domain/entry';
 import { formatMoney, formatSignedMoney } from '../domain/money';
-import { getSetting, listEntries, listOccasions } from '../db/repo';
+import { getLedgerCurrency, getSetting, listEntries, listOccasions } from '../db/repo';
 import type { RootStackParamList } from '../navigation/types';
 import { Button, Heading, Initials, Label, Rule } from '../ui/atoms';
 import { color, moneyTone, radius, space, type } from '../theme/tokens';
@@ -24,15 +24,16 @@ export default function LedgerScreen({ navigation, route }: Props) {
     useCallback(() => {
       let alive = true;
       (async () => {
-        const [rows, occasions, saved] = await Promise.all([
+        const [rows, occasions, ledgerCurrency, saved] = await Promise.all([
           listEntries(ledgerId),
           listOccasions(),
+          getLedgerCurrency(ledgerId),
           getSetting('currency'),
         ]);
         if (!alive) return;
         setEntries(rows);
         setLabels(Object.fromEntries(occasions.map((o) => [o.id, o.label])));
-        setCode(saved ?? DEFAULT_CURRENCY_CODE);
+        setCode(ledgerCurrency ?? saved ?? DEFAULT_CURRENCY_CODE);
       })();
       return () => {
         alive = false;

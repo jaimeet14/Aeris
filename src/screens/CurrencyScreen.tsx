@@ -78,7 +78,7 @@ export default function CurrencyScreen({ navigation, route }: Props) {
 
       <View style={styles.footer}>
         <Button title={`Use ${chosen.name}`} onPress={confirm} />
-        <Text style={styles.footnote}>Change it any time under You.</Text>
+        <Text style={styles.footnote}>Change it any time from the currency button on Home.</Text>
       </View>
     </SafeAreaView>
   );

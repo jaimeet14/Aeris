@@ -153,6 +153,13 @@ export async function listEntries(ledgerId: string): Promise<Entry[]> {
   return rows.map(toEntry);
 }
 
+/** The currency a ledger was opened in. Every amount in it is in this currency. */
+export async function getLedgerCurrency(ledgerId: string): Promise<string | null> {
+  const db = await getDatabase();
+  const row = await db.getFirstAsync<{ currency: string }>('SELECT currency FROM ledger WHERE id = ?', ledgerId);
+  return row?.currency ?? null;
+}
+
 export async function balanceOf(ledgerId: string): Promise<Minor> {
   return ledgerBalance(await listEntries(ledgerId));
 }

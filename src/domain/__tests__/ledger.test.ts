@@ -1,5 +1,5 @@
 import { allocateOldestFirst, totalOutstanding } from '../allocation';
-import { ledgerBalance, netPosition, openDebts, remainingOnDebt } from '../balance';
+import { ledgerBalance, netPosition, netPositionsByCurrency, openDebts, remainingOnDebt } from '../balance';
 import { AUTO_CONFIRM_WINDOW_MS, type Entry, isSettled, msUntilAutoConfirm } from '../entry';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -68,6 +68,25 @@ describe('netPosition', () => {
 
   it('reports nothing for someone fully settled', () => {
     expect(netPosition([0, 0])).toEqual({ owedToYouMinor: 0, youOweMinor: 0, netMinor: 0 });
+  });
+});
+
+describe('netPositionsByCurrency', () => {
+  it('never adds balances in different currencies together', () => {
+    expect(
+      netPositionsByCurrency([
+        { currency: 'INR', balanceMinor: 420000 },
+        { currency: 'USD', balanceMinor: -5000 },
+        { currency: 'INR', balanceMinor: -180000 },
+      ]),
+    ).toEqual({
+      INR: { owedToYouMinor: 420000, youOweMinor: 180000, netMinor: 240000 },
+      USD: { owedToYouMinor: 0, youOweMinor: 5000, netMinor: -5000 },
+    });
+  });
+
+  it('is empty with no ledgers', () => {
+    expect(netPositionsByCurrency([])).toEqual({});
   });
 });
 
