@@ -30,6 +30,18 @@ export function netPosition(balances: readonly Minor[]): NetPosition {
   return { owedToYouMinor, youOweMinor, netMinor: owedToYouMinor - youOweMinor };
 }
 
+/**
+ * Net positions kept apart per currency. Ledgers are never converted, so a
+ * rupee balance and a dollar balance must never be added together.
+ */
+export function netPositionsByCurrency(
+  ledgers: readonly { currency: string; balanceMinor: Minor }[],
+): Record<string, NetPosition> {
+  const byCurrency: Record<string, Minor[]> = {};
+  for (const { currency, balanceMinor } of ledgers) (byCurrency[currency] ??= []).push(balanceMinor);
+  return Object.fromEntries(Object.entries(byCurrency).map(([code, balances]) => [code, netPosition(balances)]));
+}
+
 /** How much of a single debt is still outstanding, after its repayments. */
 export function remainingOnDebt(debt: Entry, entries: readonly Entry[]): Minor {
   const reversed = reversedEntryIds(entries);

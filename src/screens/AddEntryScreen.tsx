@@ -7,7 +7,14 @@ import type { Direction } from '../domain/entry';
 import { parseAmount } from '../domain/money';
 import { MAX_OCCASION_LABEL, type Occasion } from '../domain/occasions';
 import { contactsAccess } from '../contacts/device';
-import { addEntry, createOccasion, findOrCreatePerson, getSetting, listOccasions } from '../db/repo';
+import {
+  addEntry,
+  createOccasion,
+  findOrCreatePerson,
+  getLedgerCurrency,
+  getSetting,
+  listOccasions,
+} from '../db/repo';
 import type { RootStackParamList } from '../navigation/types';
 import { Button, Choice, IconButton, Label, Pill } from '../ui/atoms';
 import { color, radius, space, type } from '../theme/tokens';
@@ -30,9 +37,11 @@ export default function AddEntryScreen({ navigation, route }: Props) {
   useEffect(() => {
     (async () => {
       setOccasions(await listOccasions());
-      setCode((await getSetting('currency')) ?? DEFAULT_CURRENCY_CODE);
+      const ledgerId = route.params?.ledgerId;
+      const ledgerCurrency = ledgerId ? await getLedgerCurrency(ledgerId) : null;
+      setCode(ledgerCurrency ?? (await getSetting('currency')) ?? DEFAULT_CURRENCY_CODE);
     })();
-  }, []);
+  }, [route.params?.ledgerId]);
 
   // The contact picker hands its choice back through these params.
   const pickedName = route.params?.name;
@@ -81,8 +90,22 @@ export default function AddEntryScreen({ navigation, route }: Props) {
     try {
       const amountMinor = parseAmount(amount, currency);
       if (amountMinor <= 0) throw new Error('Enter an amount greater than zero');
-      const ledgerId =
-        route.params?.ledgerId ?? (await findOrCreatePerson(who, currency.code, phoneE164)).ledgerId;
+      let ledgerId = route.params?.ledgerId;
+      if (ledgerId === undefined) {
+        const person = await findOrCreatePerson(who, currency.code, phoneE164);
+        // A name that matches someone already known lands in their ledger, which
+        // keeps its own currency. Switch to it and let the amount be checked.
+        if (person.currency !== currency.code) {
+          const theirs = currencyByCode(person.currency);
+          setCode(theirs.code);
+          Alert.alert(
+            `${person.name} is kept in ${theirs.name}`,
+            `Their ledger never converts currencies. Check the amount in ${theirs.symbol} and save again.`,
+          );
+          return;
+        }
+        ledgerId = person.ledgerId;
+      }
       await addEntry({
         ledgerId,
         direction,
