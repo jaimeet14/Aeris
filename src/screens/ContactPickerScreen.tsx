@@ -8,8 +8,8 @@ import { DEFAULT_CURRENCY_CODE } from '../domain/currency';
 import { callingCodeForCurrency } from '../domain/phone';
 import { getSetting } from '../db/repo';
 import type { RootStackParamList } from '../navigation/types';
-import { Initials, Label } from '../ui/atoms';
-import { color, space, type } from '../theme/tokens';
+import { IconButton, Initials } from '../ui/atoms';
+import { color, radius, space, type } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ContactPicker'>;
 
@@ -38,10 +38,8 @@ export default function ContactPickerScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={navigation.goBack} style={styles.close}>
-          <Text style={styles.closeText}>✕</Text>
-        </Pressable>
-        <Label>Contacts</Label>
+        <IconButton glyph="✕" label="Close" onPress={navigation.goBack} />
+        <Text style={styles.headerTitle}>Contacts</Text>
         <View style={styles.close} />
       </View>
 
@@ -71,7 +69,11 @@ export default function ContactPickerScreen({ navigation }: Props) {
             </Text>
           }
           renderItem={({ item }) => (
-            <Pressable accessibilityRole="button" onPress={() => pick(item)} style={styles.row}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => pick(item)}
+              style={({ pressed }) => [styles.row, pressed && { backgroundColor: color.panel }]}
+            >
               <Initials name={item.name} />
               <View style={styles.rowBody}>
                 <Text style={styles.name}>{item.name}</Text>
@@ -86,23 +88,23 @@ export default function ContactPickerScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: color.ground, paddingHorizontal: space.xl },
+  screen: { flex: 1, backgroundColor: color.ground, paddingHorizontal: space.lg },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: space.md },
-  close: { width: 44, height: 44, justifyContent: 'center' },
-  closeText: { color: color.ink, fontSize: 18 },
+  headerTitle: { ...type.heading, color: color.ink },
+  close: { width: 44, height: 44 },
   search: {
     color: color.ink,
     ...type.body,
-    borderWidth: 1,
-    borderColor: color.rule,
-    paddingHorizontal: space.md,
-    paddingVertical: space.md,
+    backgroundColor: color.panel,
+    borderRadius: radius.pill,
+    paddingHorizontal: space.lg,
+    height: 48,
     marginBottom: space.md,
   },
   loading: { marginTop: space.xxl },
   message: { ...type.small, color: color.muted, textAlign: 'center', marginTop: space.xxl },
-  row: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md, borderTopWidth: 1, borderTopColor: color.ruleSoft, minHeight: 44 },
-  rowBody: { flex: 1, gap: 3 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.sm, paddingHorizontal: space.sm, borderRadius: radius.md, minHeight: 60 },
+  rowBody: { flex: 1, gap: 2 },
   name: { ...type.bodyStrong, color: color.ink },
   phone: { ...type.small, color: color.dim },
 });

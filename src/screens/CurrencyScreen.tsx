@@ -5,8 +5,8 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { type Currency, currencyByCode, searchCurrencies, suggestCurrency } from '../domain/currency';
 import { getSetting, setSetting } from '../db/repo';
 import type { RootStackParamList } from '../navigation/types';
-import { Button, Label } from '../ui/atoms';
-import { color, space, type } from '../theme/tokens';
+import { Button, IconButton, Label } from '../ui/atoms';
+import { color, radius, space, type } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Currency'>;
 
@@ -34,7 +34,7 @@ export default function CurrencyScreen({ navigation, route }: Props) {
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <Label>Currency</Label>
+        {!firstRun && <IconButton glyph="✕" label="Close" onPress={navigation.goBack} />}
       </View>
 
       <View style={styles.intro}>
@@ -63,7 +63,7 @@ export default function CurrencyScreen({ navigation, route }: Props) {
             <Label>Common</Label>
           </>
         )}
-        <View style={styles.group}>
+        <View style={[styles.group, results.length === 0 && { display: 'none' }]}>
           {results.map((currency, index) => (
             <Row
               key={currency.code}
@@ -100,41 +100,47 @@ function Row({
       accessibilityRole="radio"
       accessibilityState={{ selected }}
       onPress={() => onPress(currency)}
-      style={[styles.row, divided && styles.rowDivided, selected && styles.rowSelected]}
+      style={[styles.row, divided && styles.rowDivided, selected && styles.rowSelected, !divided && styles.rowAlone]}
     >
       <Text style={[styles.symbol, selected && { color: color.accent }]}>{currency.symbol}</Text>
       <Text style={[styles.name, selected && { color: color.ink, fontWeight: '600' }]}>
         {currency.name}
       </Text>
       <Text style={[styles.code, selected && { color: color.accent }]}>{currency.code}</Text>
+      <View style={[styles.radio, selected && styles.radioOn]}>{selected && <View style={styles.radioDot} />}</View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: color.ground, paddingHorizontal: space.xl },
-  header: { alignItems: 'center', paddingVertical: space.md },
-  intro: { gap: space.sm, marginBottom: space.lg },
+  screen: { flex: 1, backgroundColor: color.ground, paddingHorizontal: space.lg },
+  header: { minHeight: 44, flexDirection: 'row', alignItems: 'center', marginVertical: space.md },
+  intro: { gap: space.sm, marginBottom: space.lg, paddingHorizontal: space.xs },
   title: { ...type.title, color: color.ink },
-  blurb: { ...type.small, color: color.muted, lineHeight: 19 },
+  blurb: { ...type.small, color: color.muted, lineHeight: 20 },
   search: {
-    height: 44,
-    borderWidth: 1,
-    borderColor: color.rule,
-    paddingHorizontal: space.md,
+    height: 48,
+    flexShrink: 0,
+    backgroundColor: color.panel,
+    borderRadius: radius.pill,
+    paddingHorizontal: space.lg,
     color: color.ink,
-    fontSize: 13.5,
+    ...type.body,
     marginBottom: space.lg,
   },
   list: { paddingBottom: space.lg, gap: space.sm },
   gap: { height: space.md },
-  group: { borderWidth: 1, borderColor: color.rule },
-  row: { flexDirection: 'row', alignItems: 'center', height: 50, paddingHorizontal: space.md, gap: space.md },
-  rowDivided: { borderTopWidth: 1, borderTopColor: color.ruleSoft },
-  rowSelected: { backgroundColor: color.accentWash, borderColor: color.accent, borderWidth: 1 },
-  symbol: { width: 34, textAlign: 'center', color: color.muted, fontSize: 15, fontWeight: '600' },
-  name: { flex: 1, color: color.inkSoft, ...type.bodyStrong },
+  group: { backgroundColor: color.panel, borderRadius: radius.lg, overflow: 'hidden' },
+  row: { flexDirection: 'row', alignItems: 'center', minHeight: 56, paddingHorizontal: space.lg, gap: space.md },
+  rowAlone: { backgroundColor: color.panel, borderRadius: radius.lg },
+  rowDivided: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: color.rule },
+  rowSelected: { backgroundColor: color.accentWash },
+  symbol: { width: 34, textAlign: 'center', color: color.muted, fontSize: 16, fontWeight: '700' },
+  name: { flex: 1, color: color.inkSoft, ...type.bodyStrong, fontWeight: '500' },
   code: { ...type.label, color: color.dim },
-  footer: { gap: space.md, paddingVertical: space.lg },
+  radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: color.faint, alignItems: 'center', justifyContent: 'center' },
+  radioOn: { borderColor: color.accent },
+  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: color.accent },
+  footer: { gap: space.md, paddingVertical: space.md },
   footnote: { ...type.small, color: color.dim, textAlign: 'center' },
 });

@@ -6,14 +6,14 @@
     "orientation": "portrait",
     "scheme": "aeris",
     "userInterfaceStyle": "dark",
-    "backgroundColor": "#0E0C18",
+    "backgroundColor": "#0B0C0A",
     "android": {
       "package": "com.jaimeet.aeris",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundImage": "./assets/adaptive-icon-background.png",
         "monochromeImage": "./assets/adaptive-icon-monochrome.png",
-        "backgroundColor": "#120E26"
+        "backgroundColor": "#A3E635"
       },
       "blockedPermissions": [
         "android.permission.WRITE_CONTACTS",
@@ -43,7 +43,7 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 180,
           "resizeMode": "contain",
-          "backgroundColor": "#0E0C18"
+          "backgroundColor": "#0B0C0A"
         }
       ]
     ],

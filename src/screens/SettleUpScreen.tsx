@@ -10,8 +10,8 @@ import type { Entry } from '../domain/entry';
 import { formatMoney, parseAmount } from '../domain/money';
 import { addEntry, getSetting, listEntries } from '../db/repo';
 import type { RootStackParamList } from '../navigation/types';
-import { Button, Choice, Label } from '../ui/atoms';
-import { color, space, type } from '../theme/tokens';
+import { Button, Choice, IconButton, Label } from '../ui/atoms';
+import { color, moneyTone, radius, space, type } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SettleUp'>;
 
@@ -89,13 +89,15 @@ export default function SettleUpScreen({ navigation, route }: Props) {
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <Label>Settle up</Label>
+        <IconButton glyph="✕" label="Close" onPress={navigation.goBack} />
+        <Text style={styles.headerTitle}>Settle up</Text>
+        <View style={styles.spacer} />
       </View>
 
       <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
         <View style={styles.summary}>
           <Label>{balance >= 0 ? `${name} owes you` : `You owe ${name}`}</Label>
-          <Text style={styles.outstanding}>{formatMoney(Math.abs(balance), currency)}</Text>
+          <Text style={[styles.outstanding, { color: moneyTone(balance) }]}>{formatMoney(Math.abs(balance), currency)}</Text>
         </View>
 
         <Choice
@@ -128,7 +130,7 @@ export default function SettleUpScreen({ navigation, route }: Props) {
         </View>
 
         <View style={styles.plan}>
-          <Label>Applied to</Label>
+          <Text style={styles.planTitle}>Applied to</Text>
           {plan && plan.allocations.length > 0 ? (
             plan.allocations.map((allocation) => {
               const debt = debts.find((d) => d.id === allocation.entryId);
@@ -163,22 +165,25 @@ export default function SettleUpScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: color.ground, paddingHorizontal: space.xl },
-  header: { alignItems: 'center', paddingVertical: space.md },
+  screen: { flex: 1, backgroundColor: color.ground, paddingHorizontal: space.lg },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: space.md },
+  headerTitle: { ...type.heading, color: color.ink },
+  spacer: { width: 44, height: 44 },
   body: { gap: space.lg, paddingBottom: space.lg },
-  summary: { gap: space.sm },
-  outstanding: { fontSize: 24, fontWeight: '600', color: color.ink },
-  amountPanel: { backgroundColor: color.panel, borderWidth: 1, borderColor: color.rule, padding: space.lg, gap: space.sm },
-  amountRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  symbol: { color: color.dim, fontSize: 26, fontWeight: '500' },
-  amountInput: { flex: 1, color: color.ink, fontSize: 46, fontWeight: '600', padding: 0 },
-  amountStatic: { flex: 1, color: color.ink, fontSize: 46, fontWeight: '600' },
-  plan: { borderWidth: 1, borderColor: color.rule, padding: space.md, gap: space.md },
+  summary: { gap: space.xs, alignItems: 'center', paddingVertical: space.sm },
+  outstanding: { fontSize: 30, fontWeight: '700', letterSpacing: -0.6 },
+  amountPanel: { backgroundColor: color.panel, borderRadius: radius.lg, paddingVertical: space.xl, paddingHorizontal: space.lg, gap: space.sm, alignItems: 'center' },
+  amountRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.xs, maxWidth: '100%' },
+  symbol: { color: color.muted, fontSize: 30, fontWeight: '600' },
+  amountInput: { minWidth: 60, flexShrink: 1, color: color.ink, fontSize: 48, fontWeight: '700', padding: 0, textAlign: 'center' },
+  amountStatic: { color: color.ink, fontSize: 48, fontWeight: '700' },
+  plan: { backgroundColor: color.panel, borderRadius: radius.lg, padding: space.lg, gap: space.md },
+  planTitle: { ...type.heading, color: color.ink },
   planRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: space.sm },
   planLabel: { ...type.bodyStrong, color: color.ink, flexShrink: 1 },
   planValue: { ...type.small, color: color.muted },
   hint: { ...type.small, color: color.dim },
-  footer: { gap: space.md, paddingVertical: space.lg },
+  footer: { gap: space.md, paddingVertical: space.md },
   after: { flexDirection: 'row', justifyContent: 'center', alignItems: 'baseline', gap: space.sm },
-  afterValue: { fontSize: 15, fontWeight: '600', color: color.ink },
+  afterValue: { fontSize: 15, fontWeight: '700', color: color.ink },
 });

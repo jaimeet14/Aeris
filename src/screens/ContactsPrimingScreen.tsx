@@ -6,7 +6,7 @@ import { requestContactsAccess } from '../contacts/device';
 import type { RootStackParamList } from '../navigation/types';
 import { Button, Label } from '../ui/atoms';
 import { Mark } from '../ui/Mark';
-import { color, space, type } from '../theme/tokens';
+import { color, radius, space, type } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ContactsPriming'>;
 
@@ -37,7 +37,7 @@ export default function ContactsPrimingScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.body}>
-        <Mark size={36} tint={color.accent} />
+        <Mark size={56} />
         <Text style={styles.title}>Pick people you already know</Text>
         <Text style={styles.blurb}>
           Choose a name from your contacts instead of typing it, so the same friend is always the
@@ -46,7 +46,9 @@ export default function ContactsPrimingScreen({ navigation }: Props) {
         <View style={styles.promises}>
           {PROMISES.map((line) => (
             <View key={line} style={styles.promise}>
-              <Text style={styles.tick}>✓</Text>
+              <View style={styles.tickDot}>
+                <Text style={styles.tick}>✓</Text>
+              </View>
               <Text style={styles.promiseText}>{line}</Text>
             </View>
           ))}
@@ -67,11 +69,12 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.ground, paddingHorizontal: space.xl },
   body: { flex: 1, justifyContent: 'center', gap: space.lg },
   title: { ...type.title, color: color.ink },
-  blurb: { ...type.body, color: color.muted, lineHeight: 22 },
-  promises: { borderWidth: 1, borderColor: color.rule, backgroundColor: color.panel, padding: space.lg, gap: space.md },
-  promise: { flexDirection: 'row', gap: space.md, alignItems: 'baseline' },
-  tick: { color: color.accent, fontSize: 13 },
-  promiseText: { ...type.small, color: color.inkSoft, flex: 1 },
+  blurb: { ...type.body, color: color.muted, lineHeight: 23 },
+  promises: { backgroundColor: color.panel, borderRadius: radius.lg, padding: space.lg, gap: space.md },
+  promise: { flexDirection: 'row', gap: space.md, alignItems: 'center' },
+  tickDot: { width: 24, height: 24, borderRadius: 12, backgroundColor: color.accentWash, alignItems: 'center', justifyContent: 'center' },
+  tick: { color: color.accent, fontSize: 13, fontWeight: '700' },
+  promiseText: { ...type.body, fontSize: 15, color: color.inkSoft, flex: 1 },
   footer: { paddingVertical: space.lg, gap: space.sm },
   skip: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
 });
