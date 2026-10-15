@@ -17,7 +17,7 @@ import { signedAmount } from '../domain/entry';
 import { type ActivityItem, listActivity } from '../db/repo';
 import type { RootStackParamList } from '../navigation/types';
 import { Label } from '../ui/atoms';
-import { color, space, type } from '../theme/tokens';
+import { color, moneyTone, radius, space, type } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Activity'>;
 
@@ -69,7 +69,7 @@ export default function ActivityScreen({ navigation }: Props) {
             <Pressable
               accessibilityRole="button"
               onPress={() => navigation.navigate('Ledger', { ledgerId: item.ledgerId, name: item.personName })}
-              style={styles.row}
+              style={({ pressed }) => [styles.row, pressed && { backgroundColor: color.raised }]}
             >
               <View style={styles.rowTop}>
                 <Text style={[styles.title, reversal && styles.struck]} numberOfLines={1}>
@@ -83,7 +83,7 @@ export default function ActivityScreen({ navigation }: Props) {
                     .filter(Boolean)
                     .join(' · ') || ' '}
                 </Text>
-                <Text style={[styles.amount, signedAmount(item) < 0 && { color: color.accent }]}>
+                <Text style={[styles.amount, { color: reversal ? color.muted : moneyTone(signedAmount(item)) }]}>
                   {formatSignedMoney(signedAmount(item), currencyByCode(item.currency))}
                 </Text>
               </View>
@@ -97,14 +97,14 @@ export default function ActivityScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.ground },
-  body: { paddingHorizontal: space.xl, paddingBottom: space.xxl },
+  body: { paddingHorizontal: space.lg, paddingBottom: space.xxl },
   empty: { ...type.small, color: color.muted, textAlign: 'center', marginTop: space.xxl },
-  dayHead: { paddingTop: space.xl, paddingBottom: space.sm },
-  row: { paddingVertical: space.md, borderTopWidth: 1, borderTopColor: color.ruleSoft, gap: 4, minHeight: 44 },
+  dayHead: { paddingTop: space.xl, paddingBottom: space.sm, paddingHorizontal: space.xs },
+  row: { backgroundColor: color.panel, borderRadius: radius.md, paddingVertical: space.md, paddingHorizontal: space.lg, gap: 4, minHeight: 44, marginBottom: space.sm },
   rowTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: space.md },
   title: { ...type.bodyStrong, color: color.ink, flex: 1 },
-  struck: { color: color.muted },
+  struck: { color: color.muted, textDecorationLine: 'line-through' },
   time: { ...type.small, color: color.dim },
   meta: { ...type.small, color: color.muted, flex: 1 },
-  amount: { ...type.small, fontWeight: '600', color: color.inkSoft },
+  amount: { ...type.amount },
 });

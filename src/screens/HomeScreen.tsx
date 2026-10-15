@@ -8,9 +8,9 @@ import { currencyByCode, DEFAULT_CURRENCY_CODE } from '../domain/currency';
 import { formatMoney, formatSignedMoney } from '../domain/money';
 import { getSetting, listPeople, type Person } from '../db/repo';
 import type { RootStackParamList } from '../navigation/types';
-import { Button, Initials, Label } from '../ui/atoms';
+import { Button, Heading, Initials, Label, Pill, Rule } from '../ui/atoms';
 import { Mark } from '../ui/Mark';
-import { color, space, type } from '../theme/tokens';
+import { color, moneyTone, radius, space, type } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -37,52 +37,49 @@ export default function HomeScreen({ navigation }: Props) {
   const net = netPosition(people.map((p) => p.balanceMinor));
   const empty = people.length === 0;
 
+  const netTone = empty ? color.faint : moneyTone(net.netMinor);
+  const netCaption =
+    net.netMinor > 0 ? 'Overall, you are owed' : net.netMinor < 0 ? 'Overall, you owe' : 'You are all square';
+
   return (
-    <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.screen} edges={['top']}>
       <View style={styles.header}>
-        <Mark size={22} tint={color.accent} />
+        <View style={styles.brand}>
+          <Mark size={30} />
+          <Text style={styles.wordmark}>Aeris</Text>
+        </View>
         <View style={styles.headerLinks}>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => navigation.navigate('Activity')}
-            style={styles.link}
-          >
-            <Label>Activity</Label>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
+          <Pill title="Activity" onPress={() => navigation.navigate('Activity')} />
+          <Pill
+            title={code}
             accessibilityLabel={`Default currency ${code}. Change`}
             onPress={() => navigation.navigate('Currency', {})}
-            style={styles.link}
-          >
-            <Label>{code}</Label>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Add entry"
-            onPress={() => navigation.navigate('AddEntry', {})}
-            style={styles.plus}
-          >
-            <Text style={styles.plusText}>+</Text>
-          </Pressable>
+          />
         </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.hero}>
-          <Label>Net position</Label>
-          <Text style={[styles.net, empty && { color: color.faint }]}>
+          <Label>{netCaption}</Label>
+          <Text style={[styles.net, { color: netTone }]} adjustsFontSizeToFit numberOfLines={1}>
             {formatSignedMoney(net.netMinor, currency)}
           </Text>
           <View style={styles.split}>
-            <View style={styles.splitHalf}>
-              <Label>Owed to you</Label>
-              <Text style={styles.splitValue}>{formatMoney(net.owedToYouMinor, currency)}</Text>
+            <View style={[styles.stat, { backgroundColor: color.gainWash }]}>
+              <View style={styles.statHead}>
+                <View style={[styles.statDot, { backgroundColor: color.gain }]} />
+                <Label>Owed to you</Label>
+              </View>
+              <Text style={[styles.statValue, { color: color.gain }]}>
+                {formatMoney(net.owedToYouMinor, currency)}
+              </Text>
             </View>
-            <View style={styles.splitRule} />
-            <View style={styles.splitHalf}>
-              <Label>You owe</Label>
-              <Text style={[styles.splitValue, { color: color.accent }]}>
+            <View style={[styles.stat, { backgroundColor: color.oweWash }]}>
+              <View style={styles.statHead}>
+                <View style={[styles.statDot, { backgroundColor: color.owe }]} />
+                <Label>You owe</Label>
+              </View>
+              <Text style={[styles.statValue, { color: color.owe }]}>
                 {formatMoney(net.youOweMinor, currency)}
               </Text>
             </View>
@@ -91,74 +88,110 @@ export default function HomeScreen({ navigation }: Props) {
 
         {empty ? (
           <View style={styles.emptyState}>
-            <Mark size={40} tint={color.rule} />
+            <Mark size={56} />
             <Text style={styles.emptyTitle}>No one owes you a thing</Text>
             <Text style={styles.emptyBlurb}>
               Next time you cover a bill or lend a friend cash, put it here before you forget the
               reason.
             </Text>
-            <Button title="Record the first one" onPress={() => navigation.navigate('AddEntry', {})} />
           </View>
         ) : (
           <View style={styles.people}>
-            <Label>People</Label>
-            {people.map((person) => (
-              <Pressable
-                key={person.ledgerId}
-                accessibilityRole="button"
-                onPress={() =>
-                  navigation.navigate('Ledger', { ledgerId: person.ledgerId, name: person.name })
-                }
-                style={styles.person}
-              >
-                <Initials name={person.name} />
-                <View style={styles.personBody}>
-                  <Text style={styles.personName}>{person.name}</Text>
-                  <Text style={styles.personMeta}>
-                    {person.balanceMinor === 0 ? 'All settled' : 'Open'}
-                  </Text>
+            <Heading>People</Heading>
+            <View style={styles.card}>
+              {people.map((person, index) => (
+                <View key={person.ledgerId}>
+                  {index > 0 && <Rule inset={space.lg + 42 + space.md} />}
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() =>
+                      navigation.navigate('Ledger', { ledgerId: person.ledgerId, name: person.name })
+                    }
+                    style={({ pressed }) => [styles.person, pressed && { backgroundColor: color.raised }]}
+                  >
+                    <Initials name={person.name} />
+                    <View style={styles.personBody}>
+                      <Text style={styles.personName} numberOfLines={1}>
+                        {person.name}
+                      </Text>
+                      <Text style={styles.personMeta}>
+                        {person.balanceMinor === 0
+                          ? 'All settled'
+                          : person.balanceMinor > 0
+                            ? 'Owes you'
+                            : 'You owe'}
+                      </Text>
+                    </View>
+                    <Text style={[styles.personAmount, { color: moneyTone(person.balanceMinor) }]}>
+                      {person.balanceMinor === 0
+                        ? 'Settled'
+                        : formatMoney(Math.abs(person.balanceMinor), currencyByCode(person.currency))}
+                    </Text>
+                    <Text style={styles.chevron}>›</Text>
+                  </Pressable>
                 </View>
-                <Text
-                  style={[
-                    styles.personAmount,
-                    person.balanceMinor < 0 && { color: color.accent },
-                    person.balanceMinor === 0 && { color: color.dim },
-                  ]}
-                >
-                  {person.balanceMinor === 0
-                    ? 'settled'
-                    : formatSignedMoney(person.balanceMinor, currencyByCode(person.currency))}
-                </Text>
-              </Pressable>
-            ))}
+              ))}
+            </View>
           </View>
         )}
       </ScrollView>
+
+      <SafeAreaView edges={['bottom']} style={styles.dock} pointerEvents="box-none">
+        <Button
+          title={empty ? 'Record the first one' : '+  New entry'}
+          onPress={() => navigation.navigate('AddEntry', {})}
+          style={styles.dockButton}
+        />
+      </SafeAreaView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: color.ground, paddingHorizontal: space.xl },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: space.md },
+  screen: { flex: 1, backgroundColor: color.ground },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: space.xl,
+    paddingVertical: space.md,
+  },
+  brand: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  wordmark: { ...type.heading, fontSize: 20, fontWeight: '700', color: color.ink },
   headerLinks: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  link: { minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center', paddingHorizontal: space.xs },
-  plus: { width: 44, height: 44, alignItems: 'flex-end', justifyContent: 'center' },
-  plusText: { color: color.muted, fontSize: 26, fontWeight: '300' },
-  body: { paddingBottom: space.xxl, gap: space.xxl },
-  hero: { backgroundColor: color.panel, borderWidth: 1, borderColor: color.rule, padding: space.lg, gap: space.lg },
-  net: { ...type.display, color: color.ink },
-  split: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: color.rule, paddingTop: space.md },
-  splitHalf: { flex: 1, gap: space.xs },
-  splitRule: { width: 1, backgroundColor: color.rule, marginHorizontal: space.lg },
-  splitValue: { fontSize: 18, fontWeight: '600', color: color.ink },
+  body: { paddingHorizontal: space.lg, paddingTop: space.sm, paddingBottom: 120, gap: space.xxl },
+  hero: { backgroundColor: color.panel, borderRadius: radius.lg, padding: space.xl, gap: space.md },
+  net: { ...type.display, marginBottom: space.sm },
+  split: { flexDirection: 'row', gap: space.md },
+  stat: { flex: 1, borderRadius: radius.md, padding: space.md, gap: space.sm },
+  statHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  statDot: { width: 8, height: 8, borderRadius: 4 },
+  statValue: { fontSize: 19, fontWeight: '700', letterSpacing: -0.3 },
   people: { gap: space.md },
-  person: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md, borderTopWidth: 1, borderTopColor: color.ruleSoft, minHeight: 44 },
-  personBody: { flex: 1, gap: 3 },
+  card: { backgroundColor: color.panel, borderRadius: radius.lg, overflow: 'hidden' },
+  person: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    paddingVertical: space.md,
+    paddingHorizontal: space.lg,
+    minHeight: 68,
+  },
+  personBody: { flex: 1, gap: 2 },
   personName: { ...type.bodyStrong, color: color.ink },
-  personMeta: { ...type.label, color: color.dim },
-  personAmount: { ...type.amount, color: color.ink },
-  emptyState: { alignItems: 'center', gap: space.lg, paddingVertical: space.xxl },
-  emptyTitle: { fontSize: 19, fontWeight: '600', color: color.ink },
-  emptyBlurb: { ...type.small, color: color.muted, textAlign: 'center', lineHeight: 20, maxWidth: 260 },
+  personMeta: { ...type.small, color: color.muted },
+  personAmount: { ...type.amount },
+  chevron: { color: color.dim, fontSize: 22, marginLeft: -2 },
+  emptyState: { alignItems: 'center', gap: space.md, paddingVertical: space.xxl },
+  emptyTitle: { ...type.heading, fontSize: 20, color: color.ink, marginTop: space.sm },
+  emptyBlurb: { ...type.small, color: color.muted, textAlign: 'center', lineHeight: 20, maxWidth: 280 },
+  dock: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: space.lg },
+  dockButton: {
+    marginBottom: space.md,
+    shadowColor: '#000',
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
+  },
 });

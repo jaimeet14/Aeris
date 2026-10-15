@@ -9,8 +9,8 @@ import { MAX_OCCASION_LABEL, type Occasion } from '../domain/occasions';
 import { contactsAccess } from '../contacts/device';
 import { addEntry, createOccasion, findOrCreatePerson, getSetting, listOccasions } from '../db/repo';
 import type { RootStackParamList } from '../navigation/types';
-import { Button, Choice, Label } from '../ui/atoms';
-import { color, space, type } from '../theme/tokens';
+import { Button, Choice, IconButton, Label, Pill } from '../ui/atoms';
+import { color, radius, space, type } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AddEntry'>;
 
@@ -102,10 +102,8 @@ export default function AddEntryScreen({ navigation, route }: Props) {
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <Pressable accessibilityRole="button" onPress={navigation.goBack} style={styles.close}>
-          <Text style={styles.closeText}>✕</Text>
-        </Pressable>
-        <Label>New entry</Label>
+        <IconButton glyph="✕" label="Close" onPress={navigation.goBack} />
+        <Text style={styles.headerTitle}>New entry</Text>
         <View style={styles.close} />
       </View>
 
@@ -119,8 +117,8 @@ export default function AddEntryScreen({ navigation, route }: Props) {
           onChange={(key) => setDirection(key as Direction)}
         />
 
-        <View style={styles.amountPanel}>
-          <Label>Amount</Label>
+        <View style={[styles.amountPanel, { borderColor: direction === 'lent' ? color.accentRule : color.oweRule }]}>
+          <Label>{direction === 'lent' ? 'You lent' : 'You borrowed'}</Label>
           <View style={styles.amountRow}>
             <Text style={styles.symbol}>{currency.symbol}</Text>
             <TextInput
@@ -148,9 +146,7 @@ export default function AddEntryScreen({ navigation, route }: Props) {
                 style={[styles.input, styles.whoInput]}
               />
               {!fixedPerson && (
-                <Pressable accessibilityRole="button" onPress={openContacts} style={styles.contactsButton}>
-                  <Label tone="accent">Contacts</Label>
-                </Pressable>
+                <Pill title="Contacts" onPress={openContacts} />
               )}
             </View>
             {phoneE164 && <Text style={styles.phone}>{phoneE164}</Text>}
@@ -162,21 +158,16 @@ export default function AddEntryScreen({ navigation, route }: Props) {
               {occasions.map((occasion) => {
                 const on = occasion.id === occasionId;
                 return (
-                  <Pressable
+                  <Pill
                     key={occasion.id}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: on }}
+                    title={occasion.label}
+                    selected={on}
                     onPress={() => setOccasionId(on ? null : occasion.id)}
-                    style={[styles.chip, on && styles.chipOn]}
-                  >
-                    <Text style={[styles.chipText, on && styles.chipTextOn]}>{occasion.label}</Text>
-                  </Pressable>
+                  />
                 );
               })}
               {newOccasion === null && (
-                <Pressable accessibilityRole="button" onPress={() => setNewOccasion('')} style={styles.chip}>
-                  <Text style={styles.chipText}>+ New</Text>
-                </Pressable>
+                <Pill title="+ New" onPress={() => setNewOccasion('')} />
               )}
             </View>
             {newOccasion !== null && (
@@ -192,9 +183,7 @@ export default function AddEntryScreen({ navigation, route }: Props) {
                   style={[styles.input, styles.whoInput]}
                   autoFocus
                 />
-                <Pressable accessibilityRole="button" onPress={addOccasion} style={styles.contactsButton}>
-                  <Label tone="accent">Add</Label>
-                </Pressable>
+                <Pill title="Add" selected onPress={addOccasion} />
                 <Pressable accessibilityRole="button" onPress={() => setNewOccasion(null)} style={styles.contactsButton}>
                   <Label>Cancel</Label>
                 </Pressable>
@@ -230,28 +219,32 @@ export default function AddEntryScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: color.ground, paddingHorizontal: space.xl },
+  screen: { flex: 1, backgroundColor: color.ground, paddingHorizontal: space.lg },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: space.md },
-  close: { width: 44, height: 44, justifyContent: 'center' },
-  closeText: { color: color.ink, fontSize: 18 },
+  headerTitle: { ...type.heading, color: color.ink },
+  close: { width: 44, height: 44 },
   body: { gap: space.lg, paddingBottom: space.lg },
-  amountPanel: { backgroundColor: color.panel, borderWidth: 1, borderColor: color.rule, padding: space.lg, gap: space.sm },
-  amountRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  symbol: { color: color.dim, fontSize: 26, fontWeight: '500' },
-  amountInput: { flex: 1, color: color.ink, fontSize: 46, fontWeight: '600', padding: 0 },
-  fields: { borderWidth: 1, borderColor: color.rule },
-  field: { padding: space.md, gap: space.sm },
-  divided: { borderTopWidth: 1, borderTopColor: color.ruleSoft },
-  input: { color: color.ink, ...type.body, padding: 0, minHeight: 24 },
+  amountPanel: {
+    backgroundColor: color.panel,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    paddingVertical: space.xl,
+    paddingHorizontal: space.lg,
+    gap: space.sm,
+    alignItems: 'center',
+  },
+  amountRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.xs, maxWidth: '100%' },
+  symbol: { color: color.muted, fontSize: 30, fontWeight: '600' },
+  amountInput: { minWidth: 60, flexShrink: 1, color: color.ink, fontSize: 48, fontWeight: '700', padding: 0, textAlign: 'center' },
+  fields: { backgroundColor: color.panel, borderRadius: radius.lg, overflow: 'hidden' },
+  field: { paddingVertical: space.md, paddingHorizontal: space.lg, gap: space.sm },
+  divided: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: color.rule },
+  input: { color: color.ink, ...type.body, padding: 0, minHeight: 28 },
   readonly: { color: color.inkSoft, ...type.body },
-  whoRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  whoInput: { flex: 1 },
+  whoRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  whoInput: { flex: 1, minWidth: 0 },
   contactsButton: { minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' },
   phone: { ...type.small, color: color.dim },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  chip: { borderWidth: 1, borderColor: color.rule, paddingVertical: 7, paddingHorizontal: 11 },
-  chipOn: { backgroundColor: color.accent, borderColor: color.accent },
-  chipText: { color: color.muted, fontSize: 11, fontWeight: '500', letterSpacing: 1, textTransform: 'uppercase' },
-  chipTextOn: { color: color.accentInk, fontWeight: '600' },
-  footer: { paddingVertical: space.lg },
+  footer: { paddingVertical: space.md },
 });
